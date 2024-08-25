@@ -5,7 +5,8 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <format>
+//#include <format>
+#include <boost/format.hpp>
 #include <thread>
 #include <boost/circular_buffer.hpp>
 #include <utility>
@@ -40,7 +41,7 @@ using namespace std;
       void operator()(size_t id, std::shared_ptr<Tmessage> msg) const{
           ostringstream id_th;
           id_th << std::this_thread::get_id();
-          string file_name = std::format("{}_{}_{}_{}.log",title_file_name,id,id_th.str(),msg->t_start);
+          std::string file_name = (boost::format("%1%_%2%_%3%_%4%.log")%title_file_name%id%id_th.str()%msg->t_start).str();
           // cout << "create file " << file_name << endl;
           ofstream file_(file_name);
           if(file_.is_open()){
