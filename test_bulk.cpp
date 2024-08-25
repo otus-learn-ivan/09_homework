@@ -14,6 +14,8 @@
 
 #include <sys/types.h>
 #include <dirent.h>
+#include <thread>
+#include <chrono>
 
 #include <boost/test/unit_test.hpp>
 
@@ -61,7 +63,7 @@ std::vector<std::string>  set_suit_cmd( std::vector<std::string>& commands ){
          while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
              std::cout << "Получено: " << buffer << std::endl;
          }
-        sleep(1); // задержка в 1 секунду
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));; // задержка в 1 секунду
     }
     // Закрываем поток для записи
     pclose(pipe);

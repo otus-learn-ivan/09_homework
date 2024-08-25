@@ -1,8 +1,9 @@
 #include <fstream>
 #include <iostream>
-#include<memory>
-#include<chrono>
-#include<vector>
+#include <memory>
+#include <chrono>
+#include <vector>
+#include "async.h"
 
 using namespace std;
 //--------------------------------------------------------------------------
@@ -22,21 +23,31 @@ class Tlogger_to_file: public Tlogger{
         }
     }
 };
+//--------------------------------------------------------------------------
 const string Tlogger_to_file::title_file_name = "bulk";
 //--------------------------------------------------------------------------
-template<class Tlog = Tlogger_to_file>
+class Tlogger_to_queue: public Tlogger{
+    size_t ID;
+public:
+    Tlogger_to_queue(size_t id):ID(id){
+       libasync::connect(id);
+    }
+    ~Tlogger_to_queue(){
+         libasync::disconnect(ID);
+    }
+    void print(size_t tiks_start,string b) override{
+        libasync::receive(b.c_str(), b.size(),ID,tiks_start);
+    }
+};
+//--------------------------------------------------------------------------
+template<class Tlog = Tlogger>
 class Tpoket_{
-    static unique_ptr<Tlogger> logger;
     static const string title;
     vector<string> bulk;
     size_t tiks_start;
     bool brace;
     public:
-    Tpoket_():bulk(){
-       if(!logger){
-            logger = make_unique<Tlog>();
-       }
-    }
+    Tpoket_():bulk(){}
     bool empty_poket()const{
         return bulk.empty();
     }
@@ -61,17 +72,15 @@ class Tpoket_{
         cout << bulk_to_string() << "\n";
         return *this;
     }
-    const Tpoket_& log_poket()const {
+    const Tpoket_& log_poket(Tlog& logger) const {
         if(empty_poket())return *this;
-        logger->print(tiks_start,bulk_to_string());
+        logger.print(tiks_start,bulk_to_string());
         return *this;
     }
 };
 template<class Tlog>
-unique_ptr<Tlogger>  Tpoket_<Tlog>::logger = nullptr;
-template<class Tlog>
 const string Tpoket_<Tlog>::title = "bulk: ";
-using Tpoket = Tpoket_<>;
+using Tpoket = Tpoket_<Tlogger>;
 //--------------------------------------------------------------------------
 class Tparser_cmd{
     enum{OPEN_BRACE=1,CLOSE_BRACE=0};
@@ -118,12 +127,15 @@ unique_ptr<Tpoket> Tparser_cmd::operator()(string& cmd){
 //--------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+#if 1
     if(argc == 1){return 0;}
     unique_ptr <Tparser_cmd> parser_cmd =  make_unique<Tparser_cmd>( atoi(argv[1]));
+    Tlogger_to_queue logger_to_queue(atoi(argv[1]));
     string cmd;
     while (getline(cin, cmd) && !cin.eof()) {
-        (*(*parser_cmd)(cmd)).print_poket().log_poket();
+        (*(*parser_cmd)(cmd)).log_poket(logger_to_queue);
     }
-    (*(*parser_cmd)(cmd)).print_poket().log_poket();
+    (*(*parser_cmd)(cmd)).log_poket(logger_to_queue);
+#endif
     return 0;
 }

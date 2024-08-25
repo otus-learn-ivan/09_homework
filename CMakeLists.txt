@@ -7,13 +7,23 @@ project(bulk_prg VERSION ${PROJECT_VESRION})
 
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-#configure_file(version.h.in version.h)
+# Библиотека libasync
+add_library(async SHARED libasync/async.cpp)
+#add_library(async STATIC libasync/async.cpp)
+# Установка библиотеки libasync
+install(TARGETS async DESTINATION /usr/local/lib)
+install(FILES async.h DESTINATION /usr/local/include)
 
 add_executable(bulk main.cpp)
+
+#add_executable(bulk main.cpp
+#    libasync/libasync.cpp
+#    async.h)
+
 add_executable(test_bulk test_bulk.cpp)
 
-set_target_properties(bulk test_bulk PROPERTIES
-    CXX_STANDARD 17
+set_target_properties(bulk test_bulk async PROPERTIES
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 #target_include_directories(bulk_prg
@@ -24,9 +34,11 @@ set_target_properties(test_bulk PROPERTIES
     INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR}
 )
 
-#target_link_libraries(bulk PRIVATE
-#    bulk_prg
-#)
+target_link_libraries(bulk async)
+
+#install(TARGETS main DESTINATION bin)
+#install(TARGETS bulk DESTINATION /usr/local/bin)
+
 target_link_libraries(test_bulk
     ${Boost_LIBRARIES}
     #bulk_prg
