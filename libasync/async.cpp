@@ -7,6 +7,8 @@
 #include <memory>
 //#include <format>
 #include <boost/format.hpp>
+#include <cstring>
+
 #include <thread>
 #include <boost/circular_buffer.hpp>
 #include <utility>
@@ -147,7 +149,7 @@ using namespace std;
   };
 
   void Treceive::receive(const char* buff, size_t size_buf,size_t t_start){
-    if(ID_this==nullptr){ throw std::out_of_range(std::format("receiver  not created")); }
+    if(ID_this==nullptr){ throw std::out_of_range(boost::format("receiver  not created").str()); }
     {
       std::shared_ptr<Tmessage> msg = std::make_shared<Tmessage>(buff, size_buf,t_start);
       Tconsumer_::Creator(file_qu).push(msg);
@@ -172,7 +174,7 @@ using namespace std;
   }
 
   void Tlibasync::receive(const char* buff, size_t size_buf, size_t ID,size_t t_start){
-    if (map_receives.find(ID) == map_receives.end()) {throw std::out_of_range(std::format("id_connector {} not created", ID));}
+    if (map_receives.find(ID) == map_receives.end()) {throw std::out_of_range((boost::format("id_connector %1% not created")%ID).str());}
     map_receives[ID]->receive(buff, size_buf,t_start);
   }
 
