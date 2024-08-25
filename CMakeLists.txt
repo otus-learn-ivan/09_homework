@@ -23,7 +23,7 @@ add_executable(bulk main.cpp)
 add_executable(test_bulk test_bulk.cpp)
 
 set_target_properties(bulk test_bulk async PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
 )
 #target_include_directories(bulk_prg
